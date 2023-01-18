@@ -47,15 +47,28 @@ class App extends Component {
   }
 
   onButtomSubmit = () => {
-    console.log ('click');
-    //  app.models.predict("4788e4614e714aa3b6e6591dad6687b8", "https://samples.clarifai.com/face-det.jpg").then(
-    //     function(response){
-      //        console.log(response);
-       //   },
-     //   function(err){
-      //
-     //   }
-    // );
+   this.setState({imageUrl: this.state.input});
+   App.models
+   .predict(
+    Clarifai.FACE_DETECT_MODEL,
+    this.state.input
+   ).then(response => {
+    if(response){
+      fetch('http://localhost:3000/image', {
+        method: 'put',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          id: this.state.user.id
+        })
+      })
+      .then(response => response.json())
+      .then(count => {
+        this.setState(Object.assign(this.state.user, { entries: count}))
+      })
+    }
+    this.displayFaceBox(this.calculateFaceLocation(response))
+   })
+   .catch(err => console.log(err));
   }
 
   componentDidMount(){
